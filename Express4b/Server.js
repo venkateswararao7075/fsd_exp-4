@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
@@ -10,7 +11,11 @@ app.use(express.json());
 app.use(cors());
 
 // Serve frontend files
-app.use(express.static("public"));
+const publicDir = path.join(__dirname, "Public");
+app.use(express.static(publicDir));
+app.get("/", (req, res) => {
+    res.sendFile(path.join(publicDir, "index.html"));
+});
 
 // MongoDB Connection
 mongoose
@@ -55,6 +60,23 @@ app.get("/api/items", async (req, res) => {
         res.json(items);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// ===============================
+// GET - Display single item by ID
+// ===============================
+app.get("/api/items/:id", async (req, res) => {
+    try {
+        const item = await Item.findById(req.params.id);
+
+        if (!item) {
+            return res.status(404).json({ error: "Item not found" });
+        }
+
+        res.json(item);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
     }
 });
 
